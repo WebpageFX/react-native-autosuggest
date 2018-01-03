@@ -16,7 +16,7 @@ import debounce from '../vendor/throttle-debounce/debounce'
 import { version } from 'react-native/package.json'
 const ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 })
 
-
+// https://github.com/posabsolute/javascript-binary-search-algorithm
 const searchBinary = function(needle, haystack, case_insensitive) {
 		if(needle == "") return [];
 		var haystackLength 	= haystack.length;
