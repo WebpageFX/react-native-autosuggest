@@ -16,6 +16,75 @@ import debounce from '../vendor/throttle-debounce/debounce'
 import { version } from 'react-native/package.json'
 const ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 })
 
+
+const searchBinary = function(needle, haystack, case_insensitive) {
+		if(needle == "") return [];
+		var haystackLength 	= haystack.length;
+		var letterNumber 	= needle.length;
+		case_insensitive 	= (typeof(case_insensitive) === 'undefined' || case_insensitive) ? true:false;
+		needle 				= (case_insensitive) ? needle.toLowerCase():needle;
+
+		/* start binary search, Get middle position */
+		var getElementPosition = findElement()
+
+		/* get interval and return result array */
+		if(getElementPosition == -1) return [];
+		return getRangeElement = findRangeElement()
+
+		function findElement() {
+			if (typeof(haystack) === 'undefined' || !haystackLength) return -1;
+
+			var high = haystack.length - 1;
+			var low = 0;
+
+			while (low <= high) {
+				mid = parseInt((low + high) / 2);
+				var element = haystack[mid].substr(0,letterNumber);
+				element = (case_insensitive) ? element.toLowerCase():element;
+
+				if (element > needle) {
+					high = mid - 1;
+				} else if (element < needle) {
+					low = mid + 1;
+				} else {
+
+					return mid;
+				}
+			}
+			return -1;
+		}
+		function findRangeElement(){
+
+			for(i=getElementPosition; i>0; i--){
+				var element =  (case_insensitive) ? haystack[i].substr(0,letterNumber).toLowerCase() : haystack[i].substr(0,letterNumber);
+				if(element != needle){
+					var start = i+1;
+					break;
+				}else{
+					var start = 0;
+				}
+			}
+			for(i=getElementPosition; i<haystackLength; i++ ){
+				var element =  (case_insensitive) ? haystack[i].substr(0,letterNumber).toLowerCase() : haystack[i].substr(0,letterNumber);
+				if(element != needle){
+					var end = i;
+					break;
+				}else{
+					var end = haystackLength -1;
+				}
+			}
+			var result = [];
+			for(i=start; i<end;i++){
+				result.push(haystack[i])
+			}
+
+			return result;
+		}
+
+	};
+
+
+
 export default class AutoSuggest extends Component {
   static propTypes = {
     containerStyles: PropTypes.object,
@@ -82,10 +151,12 @@ export default class AutoSuggest extends Component {
     this.searchTerms = this.searchTerms.bind(this)
     this.setCurrentInput = this.setCurrentInput.bind(this)
     this.onItemPress = this.onItemPress.bind(this)
+    this._renderSearching = this._renderSearching.bind(this)
     this.state = {
       TIWidth: null,
       results: [],
-      currentInput: null
+      currentInput: null,
+      searching: false
     }
   }
   componentDidMount () {
@@ -109,16 +180,21 @@ export default class AutoSuggest extends Component {
   clearTerms () { this.setState({results: []}) }
   addAllTerms () { this.setState({results: this.props.terms}) }
   searchTerms (currentInput) {
-    this.setState({ currentInput })
+    this.setState({ currentInput, searching: true });
     debounce(300, () => {
       this.getAndSetWidth()
-      const findMatch = (term1, term2) => term1.toLowerCase().indexOf(term2.toLowerCase()) > -1
-      const results = this.props.terms.filter(eachTerm => {
-        if (findMatch(eachTerm, currentInput)) return eachTerm
-      })
+      // if input is empty don't show any results
+      if( !!(currentInput.length <= 0)) {
+          this.setState({results: [], searching: false})
+          return;
+      }
 
-      const inputIsEmpty = !!(currentInput.length <= 0)
-      this.setState({results: inputIsEmpty ? [] : results}) // if input is empty don't show any results
+      // const findMatch = (term1, term2) => term1.toLowerCase().indexOf(term2.toLowerCase()) > -1
+      // const results = this.props.terms.filter(eachTerm => {
+      //   if (findMatch(eachTerm, currentInput)) return eachTerm
+      // })
+      const results = searchBinary(currentInput, this.props.terms, true);
+      this.setState({results: results, searching: false})
     })()
   }
 
@@ -137,6 +213,25 @@ export default class AutoSuggest extends Component {
     }
     return styleObj
   }
+
+  _renderSearching() {
+      if(! this.state.searching)
+        return null;
+
+      return (
+          <View style={{
+              width: this.state.TIWidth,
+              backgroundColor: '#fff'
+          }}>
+              <Text style={{
+                  color: '#999',
+                  padding: 6,
+
+              }}>Searching...</Text>
+          </View>
+      );
+  }
+
   render () {
     const {
       otherTextInputProps,
@@ -181,6 +276,7 @@ export default class AutoSuggest extends Component {
               <View
                   style={{position: 'absolute', width: this.state.TIWidth, backgroundColor: 'white', zIndex: 3}}
               >
+                  { this._renderSearching() }
                   {this.state.results.map((rowData, rowId) => (
                       <RowWrapper
                           styles={this.getCombinedStyles('rowWrapperStyles')}
