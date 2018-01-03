@@ -149,58 +149,57 @@ export default class AutoSuggest extends Component {
     } = this.props
     return (
       <View style={this.getCombinedStyles('containerStyles')}>
-      <View
-      ref="TIContainer"
-      style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
-          <TextInput
-              {...otherTextInputProps}
-              placeholderTextColor={placeholderTextColor}
-              ref="TI"
-              spellCheck={false}
-              defaultValue={this.state.currentInput}
-              onChangeText={(el) => {
-                this.searchTerms(el)
-                debounce(onChangeTextDebounce, this.props.onChangeText(el))
-              }}
-              placeholder={placeholder}
-              style={this.getCombinedStyles('textInputStyles')}
+          <View
+              ref="TIContainer"
+              style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+              <TextInput
+                  {...otherTextInputProps}
+                  placeholderTextColor={placeholderTextColor}
+                  ref="TI"
+                  spellCheck={false}
+                  defaultValue={this.state.currentInput}
+                  onChangeText={(el) => {
+                      this.searchTerms(el)
+                      debounce(onChangeTextDebounce, this.props.onChangeText(el))
+                  }}
+                  placeholder={placeholder}
+                  style={this.getCombinedStyles('textInputStyles')}
               />
 
-            { clearBtn // for if the user just wants the default clearBtn
-              ? <TouchableOpacity onPress={() => this.clearInputAndTerms()}>
-                { clearBtn }
-              </TouchableOpacity>
-            : false }
+              { clearBtn // for if the user just wants the default clearBtn
+                  ? <TouchableOpacity onPress={() => this.clearInputAndTerms()}>
+                      { clearBtn }
+                  </TouchableOpacity>
+                  : false }
 
-            { !clearBtn && clearBtnVisibility // for if the user passes a custom btn comp.
-              ? <Button style={this.getCombinedStyles('clearBtnStyles')} title="Clear" onPress={() => this.clearInputAndTerms()} />
-              : false
-            }
-         </View>
-         <View>
-            <ListView style={{position: 'absolute', width: this.state.TIWidth, backgroundColor: 'white', zIndex: 3}}
-              keyboardShouldPersistTaps={version >= '0.4.0' ? 'always' : true}
-              initialListSize={15}
-              enableEmptySections
-              dataSource={ds.cloneWithRows(this.state.results)}
-              renderRow={(rowData, sectionId, rowId, highlightRow) =>
+              { !clearBtn && clearBtnVisibility // for if the user passes a custom btn comp.
+                  ? <Button style={this.getCombinedStyles('clearBtnStyles')} title="Clear" onPress={() => this.clearInputAndTerms()} />
+                  : false
+              }
+          </View>
+          <View>
+              <View
+                  style={{position: 'absolute', width: this.state.TIWidth, backgroundColor: 'white', zIndex: 3}}
+              >
+                  {this.state.results.map((rowData, rowId) => (
                       <RowWrapper
-                        styles={this.getCombinedStyles('rowWrapperStyles')}
+                          styles={this.getCombinedStyles('rowWrapperStyles')}
+                          key={rowData+'_'+rowId}
                       >
-                        <TouchableOpacity
-                          activeOpacity={0.5 /* when you touch it the text color grimaces */}
-                          onPress={() => {
-                            this.onItemPress(this.state.results[rowId])
-                            if (onItemPress) onItemPress(this.state.results[rowId])
-                          }
-                        }
+                          <TouchableOpacity
+                              activeOpacity={0.5 /* when you touch it the text color grimaces */}
+                              onPress={() => {
+                                  this.onItemPress(this.state.results[rowId])
+                                  if (onItemPress) onItemPress(this.state.results[rowId])
+                              }
+                              }
                           >
-                            <Text style={this.getCombinedStyles('rowTextStyles')}>{rowData}</Text>
+                              <Text style={this.getCombinedStyles('rowTextStyles')}>{rowData}</Text>
                           </TouchableOpacity>
                       </RowWrapper>
-          }
-              />
+                  ))}
               </View>
+          </View>
 
     </View>
 
